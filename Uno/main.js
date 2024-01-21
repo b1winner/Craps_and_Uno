@@ -113,7 +113,7 @@ let playerDeck = []
 let usedDeck = []
 let currentPlayerCards = 0
 let aiCards = 0
-let turn = "ai"
+let turn = "player"
 start();
 function updateScreen() {
     let aiText = document.getElementById("aiText")
@@ -127,38 +127,42 @@ function getCard(playerType) {
         aiCards+=1
     }
     else {
-        playerDeck.push(cardsArray.pop())
+        let card = cardsArray.pop()
+        playerDeck.push(card)
+        addCard(card)
         currentPlayerCards+=1
         playerType = "player"
     }
     console.log("Card given to "+playerType)
 }
-function playCard(index) {
+function playCard(cardValue) {
+    console.log(cardValue)
+    console.log(typeof cardValue)
     let card = "placeholder"
+    let index = 0
     if (turn === "ai") {
+        index = aiDeck.indexOf(cardValue)
         card = aiDeck [index]
     }
     else {
+        index = playerDeck.indexOf(cardValue)
         card = playerDeck[index]
     }
-    if (checkCard(card)) {
+    if (checkCard(cardValue)) {
         if (turn==="ai") {
             usedDeck.push(aiDeck[index])
             aiDeck.splice(index,1)
             aiCards-=1
-
-
         }
         else {
             usedDeck.push(playerDeck[index])
+            removeCard(playerDeck[index])
             playerDeck.splice(index,1)
             currentPlayerCards-=1
-            renderPlayerCards()
-
         }
         renderDeckCard()
         checkWin()
-        let cardSpec = cardSpecs(card)
+        let cardSpec = cardSpecs(cardValue)
         if (cardSpec[0] === "skip"||cardSpec[0]==="reverse"||cardSpec[0]==="pickUp") {
             window.alert("Turn Skipped")
         }
@@ -181,6 +185,8 @@ function checkCard(playedCard) {
     return playCard[2] === deckCard[2] || playCard[2] === "wild" || playCard[1] === deckCard[1];
 }
 function cardSpecs(card) {
+    console.log(typeof card)
+    console.log(card)
     let color = "unknown"
     let num = -1
     let pickUp = false
@@ -188,36 +194,36 @@ function cardSpecs(card) {
     let reverse = false
     let type = "number"
 
-    if (card.contains("blue")) {
+    if (card.includes("blue")) {
         color = "blue"
     }
-    else if (card.contains("green")) {
+    else if (card.includes("green")) {
         color = "green"
     }
-    else if (card.contains("red")) {
+    else if (card.includes("red")) {
         color = "red"
     }
-    else if (card.contains("yellow")) {
+    else if (card.includes("yellow")) {
         color = "yellow"
     }
-    else if (card.contains("wild")) {
+    else if (card.includes("wild")) {
         color = "wild"
     }
-    if (card.contains("P4")) {
+    if (card.includes("P4")) {
         pickUp = true
         num = 4
         type = "pickUp"
     }
-    else if (card.contains("P2")) {
+    else if (card.includes("P2")) {
         pickUp = true
         num = 2
         type = "pickUp"
     }
-    else if (card.contains("Null")) {
+    else if (card.includes("Null")) {
         skip = true
         type = "skip"
     }
-    else if (card.contains("Twist")) {
+    else if (card.includes("Twist")) {
         reverse = true
         type = "reverse"
     }
@@ -244,8 +250,19 @@ function start() {
     renderDeckCard()
     updateScreen()
 }
-function renderPlayerCards() {
-
+function addCard(cardValue) {
+    var x = document.createElement("IMG");
+    x.setAttribute("src", cardValue);
+    x.setAttribute("id", cardValue)
+    let thing = "playCard(\""+cardValue+"\")"
+    console.log(thing)
+    x.setAttribute("onclick", thing)
+    x.setAttribute("width", "100");
+    x.setAttribute("alt", cardValue);
+    document.body.appendChild(x);
+}
+function removeCard(cardValue) {
+    document.getElementById(cardValue).remove()
 }
 function renderDeckCard() {
     let deck = document.getElementById("deck")
