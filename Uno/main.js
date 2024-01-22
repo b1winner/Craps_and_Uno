@@ -114,12 +114,16 @@ let usedDeck = []
 let currentPlayerCards = 0
 let aiCards = 0
 let turn = "player"
+let finished = false
 start();
 function updateScreen() {
     let aiText = document.getElementById("aiText")
     aiText.innerHTML = "Other Player Has: " + aiCards + " Cards"
     let turnText = document.getElementById("turn")
     turnText.innerHTML = turn + "'s turn"
+    if (turn === "ai") {
+        setTimeout(aiPlay,500)
+    }
 }
 function getCard(playerType) {
     if (playerType==="ai") {
@@ -136,60 +140,62 @@ function getCard(playerType) {
     console.log("Card given to "+playerType)
 }
 function playCardFunct(cardValue) {
-    console.log(cardValue)
-    console.log(typeof cardValue)
-    let card = "placeholder"
-    let index = 0
-    if (turn === "ai") {
-        index = aiDeck.indexOf(cardValue)
-        card = aiDeck [index]
-    }
-    else {
-        index = playerDeck.indexOf(cardValue)
-        card = playerDeck[index]
-    }
-    if (checkCard(cardValue)) {
-        if (turn==="ai") {
-            usedDeck.push(aiDeck[index])
-            console.log("Ai Deck Push: "+aiDeck[index])
-            aiDeck.splice(index,1)
-            aiCards-=1
+    if (!finished) {
+        console.log(cardValue)
+        console.log(typeof cardValue)
+        let card = "placeholder"
+        let index = 0
+        if (turn === "ai") {
+            index = aiDeck.indexOf(cardValue)
+            card = aiDeck [index]
         }
         else {
-            usedDeck.push(playerDeck[index])
-            console.log("Player Deck Push: "+playerDeck[index])
-            removeCard(playerDeck[index])
-            playerDeck.splice(index,1)
-            currentPlayerCards-=1
+            index = playerDeck.indexOf(cardValue)
+            card = playerDeck[index]
         }
-        renderDeckCard()
-        checkWin()
-        let cardSpec = cardSpecs(cardValue)
-        if (cardSpec[0] === "skip"||cardSpec[0]==="reverse"||cardSpec[0]==="pickUp") {
-            window.alert("Turn Skipped")
-            if (cardSpec[0]==="pickUp") {
-                for(let i=0;i<cardSpec[1];i++)
-                if (turn === "ai") {
-                    getCard("player")
-                }
-                else {
-                    getCard("ai")
-                }
-            }
-        }
-        else {
-            if (turn === "ai") {
-                turn = "player"
+        if (checkCard(cardValue)) {
+            if (turn==="ai") {
+                usedDeck.push(aiDeck[index])
+                console.log("Ai Deck Push: "+aiDeck[index])
+                aiDeck.splice(index,1)
+                aiCards-=1
             }
             else {
-                //turn = "ai"
+                usedDeck.push(playerDeck[index])
+                console.log("Player Deck Push: "+playerDeck[index])
+                removeCard(playerDeck[index])
+                playerDeck.splice(index,1)
+                currentPlayerCards-=1
+            }
+            renderDeckCard()
+            checkWin()
+            let cardSpec = cardSpecs(cardValue)
+            if (cardSpec[0] === "skip"||cardSpec[0]==="reverse"||cardSpec[0]==="pickUp") {
+                window.alert("Turn Skipped")
+                if (cardSpec[0]==="pickUp") {
+                    for(let i=0;i<cardSpec[1];i++)
+                        if (turn === "ai") {
+                            getCard("player")
+                        }
+                        else {
+                            getCard("ai")
+                        }
+                }
+            }
+            else {
+                if (turn === "ai") {
+                    turn = "player"
+                }
+                else {
+                    turn = "ai"
+                }
             }
         }
+        else {
+            window.alert("Invalid Card")
+        }
+        updateScreen()
     }
-    else {
-        window.alert("Invalid Card")
-    }
-    updateScreen()
 }
 function checkCard(playedCard) {
     let playCard = cardSpecs(playedCard)
@@ -244,9 +250,11 @@ function cardSpecs(card) {
 function checkWin() {
     if (aiDeck.length===0) {
         window.alert("You Lose")
+        finished = true
     }
     else if (playerDeck.length===0) {
         window.alert("You Win!")
+        finished = true
     }
 }
 function shuffleDeck() {
@@ -283,4 +291,23 @@ function renderDeckCard() {
     console.log("Render Deck: "+usedDeck[usedDeck.length-1])
     deck.src = usedDeck[usedDeck.length-1]
     deck.alt = usedDeck[usedDeck.length-1]
+}
+function aiPlay() {
+    if (!finished) {
+        let run = true
+        while (run) {
+            for (let i = 0; i<aiDeck.length;i++) {
+                if (checkCard(aiDeck[i])) {
+                    playCardFunct(aiDeck[i])
+                    run = false
+                    break
+                }
+            }
+            if (run) {
+                getCard("ai")
+                updateScreen()
+            }
+        }
+    }
+
 }
